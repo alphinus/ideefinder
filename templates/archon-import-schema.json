@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Archon Import Format",
+  "description": "Schema for importing into Archon project management",
+  "type": "object",
+  "required": ["version", "project"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Import format version"
+    },
+    "project": {
+      "type": "object",
+      "required": ["title", "description"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Project title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description"
+        },
+        "github_repo": {
+          "type": ["string", "null"],
+          "description": "GitHub repository URL"
+        },
+        "features": {
+          "type": "object",
+          "description": "Project features/capabilities"
+        },
+        "data": {
+          "type": "object",
+          "description": "Additional project data"
+        }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "description": "List of tasks to create",
+      "items": {
+        "type": "object",
+        "required": ["title", "status"],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["todo", "doing", "review", "done"]
+          },
+          "assignee": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          },
+          "feature": {
+            "type": "string"
+          },
+          "task_order": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "description": "Documents to create",
+      "items": {
+        "type": "object",
+        "required": ["title", "document_type", "content"],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "document_type": {
+            "type": "string",
+            "enum": ["spec", "design", "note", "prp", "api", "guide"]
+          },
+          "content": {
+            "type": "object"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "note": {
+      "type": "string",
+      "description": "Import instructions or notes"
+    }
+  }
+}

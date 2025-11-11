@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Project Specification",
+  "description": "Schema for Ideenfinder project specifications",
+  "type": "object",
+  "required": ["version", "generated_at", "project"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Spec version",
+      "example": "1.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO timestamp of generation"
+    },
+    "project": {
+      "type": "object",
+      "required": ["title", "description"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Project title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Project description"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["web-app", "mobile-app", "cli-tool", "api", "library", "other"],
+          "description": "Project type"
+        }
+      }
+    },
+    "research": {
+      "type": "object",
+      "properties": {
+        "report": {
+          "type": "string",
+          "description": "Market research report (markdown)"
+        }
+      }
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "type": "string",
+          "description": "Feature plan (markdown)"
+        }
+      }
+    },
+    "techstack": {
+      "type": "object",
+      "properties": {
+        "recommendations": {
+          "type": "string",
+          "description": "Tech stack recommendations (markdown)"
+        }
+      }
+    },
+    "reusability": {
+      "type": "object",
+      "properties": {
+        "assets": {
+          "type": "string",
+          "description": "Reusable assets (markdown)"
+        },
+        "similar_projects": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "Similar projects from Archon"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "report": {
+          "type": "string",
+          "description": "Validation report (markdown)"
+        }
+      }
+    }
+  }
+}
