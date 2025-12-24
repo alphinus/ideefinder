@@ -13,6 +13,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from utils.claude_api import get_claude_api
 from utils.parallel_executor import run_agents_parallel
+from utils.archon_integration import ArchonIntegration
 from agents.research_agent import ResearchAgent
 from agents.feature_planner import FeaturePlannerAgent
 from agents.techstack_analyzer import TechstackAnalyzerAgent
@@ -34,6 +35,9 @@ class IdeenfinderOrchestrator:
         self.techstack_analyzer = TechstackAnalyzerAgent(self.claude_api)
         self.reusability_scout = ReusabilityScoutAgent(self.claude_api)
         self.validator = ValidatorAgent(self.claude_api)
+
+        # Initialize Archon integration
+        self.archon = ArchonIntegration(config_path)
 
         # Storage for results
         self.context = {}
@@ -93,12 +97,25 @@ class IdeenfinderOrchestrator:
         outputs = self._generate_outputs(spec, output_dir)
         self.console.print("✓ Outputs generated\n")
 
-        self._display_summary(outputs, output_dir)
+        # Phase 5.5: Auto-Import to Archon (if enabled)
+        project_id = None
+        if self.archon.enabled:
+            self.console.print(Panel("[bold]Auto-Import to Archon[/bold]", style="cyan"))
+            project_id = await self.archon.auto_import_project(spec)
+            if project_id:
+                self.console.print(f"✨ Project auto-imported to Archon: [cyan]{project_id}[/cyan]")
+                archon_url = self.archon.api_url.replace('/api/projects', '')
+                self.console.print(f"🔗 Open: [link={archon_url}/projects/{project_id}]{archon_url}/projects/{project_id}[/link]\n")
+            else:
+                self.console.print("⚠️  Auto-import failed - check logs above\n")
+
+        self._display_summary(outputs, output_dir, project_id)
 
         return {
             "specification": spec,
             "outputs": outputs,
-            "output_directory": output_dir
+            "output_directory": output_dir,
+            "archon_project_id": project_id
         }
 
     async def _run_phase_1(self) -> Dict[str, Any]:
@@ -278,7 +295,7 @@ class IdeenfinderOrchestrator:
             title = idea[:50]
         return title.strip()
 
-    def _display_summary(self, outputs: Dict[str, str], output_dir: str):
+    def _display_summary(self, outputs: Dict[str, str], output_dir: str, project_id: Optional[str] = None):
         """Display completion summary"""
         self.console.print("\n[bold green]✨ Project Specification Complete![/bold green]\n")
 
@@ -288,7 +305,14 @@ class IdeenfinderOrchestrator:
 
         self.console.print(f"\n[bold]Output Directory:[/bold] [cyan]{output_dir}[/cyan]")
 
+        if project_id:
+            archon_url = self.archon.api_url.replace('/api/projects', '')
+            self.console.print(f"\n[bold green]✅ Archon Project:[/bold green] [link={archon_url}/projects/{project_id}]{archon_url}/projects/{project_id}[/link]")
+
         self.console.print("\n[bold yellow]Next Steps:[/bold yellow]")
         self.console.print("  1. Review: [cyan]less project-spec.md[/cyan]")
-        self.console.print("  2. Import to Archon: Use [cyan]archon-import.json[/cyan]")
+        if project_id:
+            self.console.print(f"  2. Open Archon project and start working on tasks")
+        else:
+            self.console.print("  2. Import to Archon: Use [cyan]archon-import.json[/cyan]")
         self.console.print("  3. Start coding with Claude Code!\n")
